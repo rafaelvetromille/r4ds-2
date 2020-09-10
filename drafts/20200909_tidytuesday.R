@@ -9,6 +9,41 @@ library(magrittr)
 url <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-08-25/chopped.tsv'
 chopped <- readr::read_tsv(url)
 
+# Os Jurados
+
+chopped %>%
+  mutate(judge1 = if_else(judge1 == "Amanda Freita", "Amanda Freitag", judge1),
+         judge2 = if_else(judge2 == "Amanda Freita", "Amanda Freitag", judge2),
+         judge3 = if_else(judge3 == "Amanda Freita", "Amanda Freitag", judge3),
+         judge1 = if_else(judge1 == "Chris Santo", "Chris Santos", judge1),
+         judge2 = if_else(judge2 == "Chris Santo", "Chris Santos", judge2),
+         judge3 = if_else(judge3 == "Chris Santo", "Chris Santos", judge3)) %>%
+  pivot_longer(
+    starts_with("judge"),
+    values_to = "nome_jurado",
+    names_to = "nome",
+  ) %>%
+  count(nome_jurado) %>%
+  filter(n > 5) %>%
+  arrange(desc(n)) %>%
+  ggplot(aes(y = fct_reorder(nome_jurado, n), x = n)) +
+  geom_col() +
+  labs(x = 'Número de Episódios', y = '')
+
+# Cluster dos Ingredientes
+
+chopped %>%
+  pivot_longer(
+    c(entree, appetizer, dessert),
+    names_to = "prato",
+    values_to = "ingredientes"
+  ) %>%
+  mutate(
+    ingredientes = stringr::str_split(ingredientes, pattern = ", ")
+  ) %>%
+  unnest(ingredientes) %>%
+  view()
+
 # Tidy -------------------------------------------------------------------------
 
 # Visualize --------------------------------------------------------------------
