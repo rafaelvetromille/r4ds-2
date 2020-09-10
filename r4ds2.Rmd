@@ -12,11 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## O pacote dplyr
 
-```{r}
-library(dplyr)
+```{r, echo=F}
+
+shhh <- suppressPackageStartupMessages
+
 ```
 
-# A função bind_rows()
+
+```{r}
+# Carrengando o pacote 
+
+shhh(library(tidyverse))
+
+```
+
+### A função bind_rows()
 
 Vamos usar a função `bind_rows()` para juntarmos duas bases com as mesmas colunas. Neste caso, a função `bind_rows()` é equivalente à função `rbind()`.
 
@@ -27,6 +37,31 @@ imdb_2015 <- readr::read_rds("./data/imdb_por_ano/imdb_2015.rds")
 imdb_2016 <- readr::read_rds("./data/imdb_por_ano/imdb_2016.rds")
 
 bind_rows(imdb_2015, imdb_2016) %>% head()
+
+```
+
+**Observação**: tanto para a bind_rows() quanto para a rbind(), a ordem das colunas em ambas as bases pode ser diferente. As colunas são empilhadas pelo nome.
+
+\newpage
+
+Podemos também usar a função bind_rows() para juntar várias tabelas. Aqui, todas as tabelas continuam tendo as mesmas colunas.
+
+```{r}
+
+arquivos <- list.files("./data/imdb_por_ano/", full.names = TRUE)
+
+teste <- arquivos %>%
+  purrr::map(readr::read_rds) %>% 
+  bind_rows() 
+
+```
+
+ou 
+
+```{r}
+
+teste <- arquivos %>%
+  purrr::map_dfr(readr::read_rds) 
 
 ```
 
