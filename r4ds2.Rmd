@@ -1,0 +1,32 @@
+---
+title: "R para Ciência de Dados 2"
+subtitle: "dplyr++"
+author: "Rafael Vetromille"
+date: "10/09/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## O pacote dplyr
+
+```{r}
+library(dplyr)
+```
+
+# A função bind_rows()
+
+Vamos usar a função `bind_rows()` para juntarmos duas bases com as mesmas colunas. Neste caso, a função `bind_rows()` é equivalente à função `rbind()`.
+
+```{r}
+# Juntando duas bases
+
+imdb_2015 <- readr::read_rds("./data/imdb_por_ano/imdb_2015.rds")
+imdb_2016 <- readr::read_rds("./data/imdb_por_ano/imdb_2016.rds")
+
+bind_rows(imdb_2015, imdb_2016) %>% head()
+
+```
+
