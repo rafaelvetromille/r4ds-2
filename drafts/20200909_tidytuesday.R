@@ -30,7 +30,7 @@ chopped %>%
   geom_col() +
   labs(x = 'Número de Episódios', y = '')
 
-# Cluster dos Ingredientes
+# Ingredientes
 
 chopped %>%
   pivot_longer(
@@ -42,7 +42,14 @@ chopped %>%
     ingredientes = stringr::str_split(ingredientes, pattern = ", ")
   ) %>%
   unnest(ingredientes) %>%
-  view()
+  mutate(ingredientes = stringr::str_remove_all(ingredientes, "[^A-Za-z ]") %>%
+           str_squish() %>%
+           tolower()) %>%
+  count(ingredientes, sort = TRUE)
+
+
+
+
 
 # Tidy -------------------------------------------------------------------------
 
