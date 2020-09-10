@@ -41,7 +41,8 @@ chopped %>%
   mutate(
     ingredientes = stringr::str_split(ingredientes, pattern = ", ")
   ) %>%
-  unnest(ingredientes) %>%
+  dplyr::mutate(ingredientes = purrr::map(ingredientes, setNames, c("V1","V2","V3","V4","V5","V6"))) %>%
+  unnest_wider(ingredientes) %>% view()
   mutate(ingredientes = stringr::str_remove_all(ingredientes, "[^A-Za-z ]") %>%
            str_squish() %>%
            tolower()) %>%
@@ -74,8 +75,18 @@ chopped %>%
 
 # Variabilidade de Ingredientes por Temporada
 
-
-
+teste <- chopped %>%
+  pivot_longer(
+    c(entree, appetizer, dessert),
+    names_to = "prato",
+    values_to = "ingredientes"
+  ) %>%
+  mutate(
+    ingredientes = stringr::str_split(ingredientes, pattern = ", ")
+  ) %>%
+  select(season, season_episode, prato, ingredientes) %>%
+  unnest_wider(ingredientes,
+               names_sep = "")
 
 # Tidy -------------------------------------------------------------------------
 
