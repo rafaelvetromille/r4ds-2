@@ -47,6 +47,7 @@ chopped %>%
            tolower()) %>%
   count(ingredientes, sort = TRUE)
 
+
 # Nota IMDB
 
 chopped %>%
@@ -70,6 +71,7 @@ chopped %>%
   ) %>%
   filter(is.finite(media)) %>%
   arrange(desc(media))
+
 
 
 
