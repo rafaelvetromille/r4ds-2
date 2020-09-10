@@ -69,7 +69,7 @@ chopped %>%
     media = mean(episode_rating, na.rm = TRUE)
   ) %>%
   filter(is.finite(media)) %>%
-  arrange(media %>% desc)
+  arrange(desc(media))
 
 
 
