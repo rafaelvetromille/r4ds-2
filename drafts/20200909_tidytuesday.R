@@ -72,6 +72,8 @@ chopped %>%
   filter(is.finite(media)) %>%
   arrange(desc(media))
 
+# Variabilidade de Ingredientes por Temporada
+
 
 
 
