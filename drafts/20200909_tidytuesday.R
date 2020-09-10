@@ -30,7 +30,7 @@ chopped %>%
   geom_col() +
   labs(x = 'Número de Episódios', y = '')
 
-# Cluster dos Ingredientes
+# Ingredientes
 
 chopped %>%
   pivot_longer(
@@ -42,7 +42,36 @@ chopped %>%
     ingredientes = stringr::str_split(ingredientes, pattern = ", ")
   ) %>%
   unnest(ingredientes) %>%
-  view()
+  mutate(ingredientes = stringr::str_remove_all(ingredientes, "[^A-Za-z ]") %>%
+           str_squish() %>%
+           tolower()) %>%
+  count(ingredientes, sort = TRUE)
+
+# Nota IMDB
+
+chopped %>%
+  pivot_longer(
+    c(entree, appetizer, dessert),
+    names_to = "prato",
+    values_to = "ingredientes"
+  ) %>%
+  mutate(
+    ingredientes = stringr::str_split(ingredientes, pattern = ", ")
+  ) %>%
+  unnest(ingredientes) %>%
+  mutate(ingredientes = stringr::str_remove_all(ingredientes, "[^A-Za-z ]") %>%
+           str_squish() %>%
+           tolower()) %>%
+  select(season, season_episode, ingredientes, episode_rating) %>%
+  mutate(ingredientes = if_else(ingredientes == "a wagyu beef", "wagyu beef", ingredientes)) %>%
+  group_by(ingredientes) %>%
+  summarise(
+    media = mean(episode_rating, na.rm = TRUE)
+  ) %>%
+  filter(is.finite(media)) %>%
+  arrange(media %>% desc)
+
+
 
 # Tidy -------------------------------------------------------------------------
 
