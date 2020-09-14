@@ -99,17 +99,16 @@ x %>%
 Se fossemos utilizar a função `base::ifelse()`, precisaríamos usar a função duas vezes, assim como é feito no Excel um `se` dentro de outro:
 
 ```{r}
-
+## A função ifelse() em contraste com a case_when()
 x %>%
-  dplyr::mutate(sinal = ifelse(x < 0, "negativo", 
+  dplyr::mutate(sinal = ifelse(x < 0, "negativo",
                                ifelse(x == 0, "zero", "positivo")))
-
 ```
 
 A ordem das condições é importante na função `dplyr::case_when()`, pois os testes são realizados na ordem em que aparecem e o próximo teste não substitui o anterior. Por exemplo, 
 
 ```{r}
-
+## A ordem importa na função case_when().
 mtcars %>%
   mutate(
     mpg_cat = case_when(
@@ -119,13 +118,12 @@ mtcars %>%
     )
   ) %>% 
   head(15)
-
 ```
 
 Nesse caso, os carros com `mpg` menor ou igual a 15 são considerados *econômicos*, os caros com `mpg` maior (estrito) que 15 e menor (estrito) que 22 são *regulares* e, por fim, os carros com `mpg` maior ou igual à 22 são considerados como *bebe bem*. Como a última condição é complementar, isto é, as observações que não entrarm nas condições anteriores com certeza entrarão na última condição, podemos substituí-la por um simples `TRUE`.
 
 ```{r}
-
+## Um facilitador nem tão facilitante (TRUE)
 mtcars %>%
   mutate(
     mpg_cat = case_when(
@@ -135,7 +133,6 @@ mtcars %>%
     )
   ) %>% 
   head(15)
-
 ```
 
 \newpage
