@@ -343,7 +343,6 @@ ames %>%
     lote_area_media = mean(lote_area, na.rm = TRUE),
     venda_valor_medio = mean(venda_valor, na.rm = TRUE)
   )
-
 ```
 
 Ou, ainda, 
@@ -362,26 +361,24 @@ ames %>%
 Agora, com a nova função `across()`, podemos fazer a mesma sumarização da seguinte forma: 
 
 ```{r}
-
 ames %>%
   group_by(geral_qualidade) %>%
   summarise(across(
     .cols = c(lote_area, venda_valor),
     .fns = mean, na.rm = TRUE
   ))
-
 ```
 
 A sintaxe é parecida com a função `summarise_at()`, mas agora não precisamos mais usar a função `vars()` e nem usar `list(nome_da_funcao)` ou `~nome_da_funcao(.x)` para definir a função aplicada nas colunas.
 
-Usando `across()`, podemos facilmente aplicar uma função em todas as colunas da nossa base. Abaixo, calculamos o número de valores distintos para todas as variáveis da base ames.
+Usando `across()`, podemos facilmente aplicar uma função em todas as colunas da nossa base. Abaixo, calculamos o número de valores distintos para todas as variáveis da base `ames`.
 
 ```{r}
-# A função across()
+# A função across() e summarise
 
 ames %>%
   summarise(across(
-    .cols = everything(),
+    .cols = everything(),  # default, não era necessário
     .fns = n_distinct, na.rm = TRUE
   )) %>%
   select(1:5)
@@ -390,7 +387,7 @@ ames %>%
 
 ames %>%
   summarise(across(
-    .cols = everything(),
+    .cols = everything(),  # default, não era necessário
     .fns = ~ n_distinct(.x, na.rm = TRUE)
   )) %>%
   select(1:5)
@@ -398,9 +395,30 @@ ames %>%
 
 ```
 
-Se quisermos selecionar as colunas a serem modificadas a partir de um teste lógico, utilizamos o ajudante `where()`.
+Se quisermos selecionar as colunas a serem modificadas a partir de um teste lógico, utilizamos o ajudante `where()`. No exemplo abaixo, calculamos o número de valores distintos das colunas do tibble que são texto (character).
 
-No exemplo abaixo, calculamos o número de valores distintos das colunas de texto.
+```{r}
+# As função across(), com o auxiliar where() e summarise()
+
+ames %>%
+  summarise(across(
+    .cols = where(is.character),
+    .fns = n_distinct, na.rm = TRUE
+  )) %>%
+  select(1:5)
+
+# A purrr-style formula for across() - more intuitive
+
+ames %>%
+  summarise(across(
+    .cols = where(is.character),
+    .fns = ~ n_distinct(.x, na.rm = T)
+  )) %>%
+  select(1:5)
+```
+
+Todas as colunas da base resultante eram colunas com classe `character` na base `ames`.
+
 
 ```{r}
 # As função across(), com o auxiliar where() e summarise()
@@ -422,6 +440,9 @@ ames %>%
   )) %>%
   select(1:5)
 
+ames %>% 
+  select(where(is.character)) %>% 
+  dim()
+
 ```
 
-Repare que ao utilizar a função ajudante `where`, a função a ser utilizada não entra com nenhum 
