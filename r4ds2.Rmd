@@ -59,20 +59,21 @@ df <- arquivos %>%
 onde o `r` da função `purrr::map_dfr()` indica _rows_. Além disso, a função `bind_rows()` também funciona para empilhar bases com colunas diferentes. 
 
 ```{r}
-
+# Tabela 1 
 tab1 <- tibble::tibble(
   var1 = c(1, 2, 3),
   var2 = c("a", "b", "c"),
   var3 = c(10, 20, 30)
 )
 
+# Tabela 2
 tab2 <- tibble::tibble(
   var2 = c("d", "e", "f"),
   var1 = c(4, 5, 6)
 )
 
-bind_rows(tab1, tab2) 
-
+# Juntar as linhas com a tab1 por cima. 
+dplyr::bind_rows(tab1, tab2) 
 ```
 
 Além da função `dplyr::bind_rows()` o `{dplyr}` também possui a função `dplyr::bind_cols()` que junta duas bases colando suas colunas lado a lado.
@@ -84,11 +85,15 @@ Além da função `dplyr::bind_rows()` o `{dplyr}` também possui a função `dp
 A função `dplyr::case_when()` é uma generalização da função `base::ifelse()`. Ela permite trabalharmos com quantas condições forem necessárias. 
 
 ```{r}
+## Vetor x transformado em tibble
+x <- sample(-10:10, size = 10) %>%
+  as_tibble()
 
-x <- sample(-10:10, size = 10) %>%  as_tibble()
-
+## Aplicando a função case_when() 
 x %>%
-  dplyr::mutate(sinal = case_when(x < 0 ~ "negativo", x == 0 ~ "zero", x > 0 ~ "positivo"))
+  dplyr::mutate(sinal = case_when(x < 0 ~ "negativo",
+                                  x == 0 ~ "zero",
+                                  x > 0 ~ "positivo"))
 ```
 
 Se fossemos utilizar a função `base::ifelse()`, precisaríamos usar a função duas vezes, assim como é feito no Excel um `se` dentro de outro:
