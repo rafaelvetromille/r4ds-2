@@ -139,10 +139,11 @@ mtcars %>%
 
 \newpage
 
-Como pudemos ver, a função `dplyr::case_when()` é extretamente útil associada à função `dplyr::mutate()` pois assim, conseguimos criar variáveis novas que são obtidas através de testes de outras variáveis. Um caso bastante usado é quando queremos fazer gráficos em que os valores negativos ficam em vermelho enquanto que os valores positivos ficam em verde. 
+Como pudemos ver, a função `dplyr::case_when()` é extretamente útil associada à função `dplyr::mutate()` pois assim, conseguimos criar variáveis novas que são obtidas 
+através de testes de outras variáveis. Um caso bastante usado é quando queremos fazer gráficos em que os valores negativos ficam em vermelho enquanto que os valores positivos ficam em verde. 
 
 ```{r}
-
+## As funções mutate() e case_when(). 
 mtcars %>%
   mutate(
     mpg_cat = case_when(
@@ -159,18 +160,18 @@ mtcars %>%
 Como o próprio nome já indica, essas funções retornam o primeiro e último valor de vetor/coluna. Por exemplo, 
 
 ```{r}
+## As funções first() e last() do pacote dplyr
 x <- c(1, 12, 30, 41, 15)
 
-first(x)
+first(x) # retorna o primeiro valor do vetor/coluna
 
-last(x)
-
+last(x) # retorna o último valor do vetor/coluna
 ```
 
 São funções úteis quando temos algum tipo de ordem, por exemplo:
 
 ```{r}
-
+## As funções group_by() com o uso do first() e last()
 tab <- tibble::tibble(
   tempo = c(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4),
   var = c(1, 4, 10, 33, 1, 3, 0, 21, 12, 7, 9, 17),
@@ -182,7 +183,6 @@ tab %>%
   arrange(tempo, .by_group = TRUE) %>% 
   mutate(inicio = first(var), 
          fim = last(var))
-
 ```
 
 # A função `na_if()`

@@ -1,4 +1,3 @@
-
 # 1. dplyr ++ -------------------------------------------------------------
 
 library(dplyr)
@@ -6,25 +5,35 @@ library(dplyr)
 # bind_rows ---------------------------------------------------------------
 
 # Juntando duas bases
+
 imdb_2015 <- readr::read_rds("data/imdb_por_ano/imdb_2015.rds")
 imdb_2016 <- readr::read_rds("data/imdb_por_ano/imdb_2016.rds")
 
-bind_rows(imdb_2015, imdb_2016)
-rbind(imdb_2015, imdb_2016)
+# tidyverse
+dplyr::bind_rows(imdb_2015, imdb_2016)
+
+# r base
+base::rbind(imdb_2015, imdb_2016)
 
 # Juntando várias bases
 
 arquivos <- list.files("data/imdb_por_ano/", full.names = TRUE)
 
-purrr::map(
-  arquivos,
-  readr::read_rds
-) %>%
+## com bind_rows()
+
+arquivos %>%
+purrr::map(.f = readr::read_rds) %>%
   bind_rows()
 
-# rbind() não funciona com listas
+## sem bind_rows(), o r da função indica rows
+
 arquivos %>%
-  purrr::map(readr::read_rds) %>%
+purrr::map_dfr(.f = readr::read_rds)
+
+# rbind() não funciona com listas
+
+arquivos %>%
+  purrr::map(.f = readr::read_rds) %>%
   rbind()
 
 # Juntando bases com colunas diferentes
@@ -40,12 +49,11 @@ tab2 <- tibble::tibble(
   var1 = c(4, 5, 6)
 )
 
-bind_rows(tab1, tab2)
-rbind(tab1, tab2)
+dplyr::bind_rows(tab1, tab2) # permite
+base::rbind(tab1, tab2) # não permit
 
 # A função bind_cols() possui propriedades equivalentes
 # para a tarefa de juntar colunas.
-
 
 # case_when ---------------------------------------------------------------
 
@@ -57,12 +65,12 @@ case_when(
   x < 0 ~ "negativo",
   x == 0 ~ "zero",
   x > 0 ~ "positivo"
-)
+) # mais fácil de ler
 
 # Com ifelse(), precisaríamos usar a
 # função duas vezes
 
-ifelse(x < 0, "negativo", ifelse(x == 0, "zero", "positivo"))
+ifelse(x < 0, "negativo", ifelse(x == 0, "zero", "positivo")) # difícil de compreender
 
 # O teste complementar pode ser substituído
 # por um TRUE
@@ -85,15 +93,12 @@ mtcars %>%
   )
 
 # Substituindo último teste por TRUE
+
 mtcars %>%
-  mutate(
-    mpg_cat = case_when(
-      mpg < 15 ~ "bebe bem",
-      mpg < 22 ~ "regular",
-      TRUE ~ "economico"
-    )
-  ) %>%
-  select(mpg, mpg_cat)
+  mutate(mpg_cat = case_when(mpg < 15 ~ "bebe bem",
+                             mpg < 22 ~ "regular",
+                             TRUE ~ "economico")) %>%
+  select(mpg, mpg_cat) # não fica tão compreensível
 
 # first, last -------------------------------------------------------------
 
@@ -105,6 +110,7 @@ first(x)
 last(x)
 
 # São funções úteis quando temos algum tipo de ordem
+
 tab <- tibble::tibble(
   tempo = c(1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5),
   var = c(1, 4, 10, 33, 20, 1, 3, 0, 3, 21, 12, 7, 9, 17, 2),
@@ -114,14 +120,10 @@ tab <- tibble::tibble(
 tab %>%
   group_by(grupo) %>%
   arrange(tempo, .by_group = TRUE) %>%
-  mutate(
-    inicio = first(var),
-    fim = last(var)
-  ) %>%
+  mutate(inicio = first(var),
+         fim = last(var)) %>%
   ungroup() %>%
-  mutate(
-    diferenca = fim - var
-  )
+  mutate(diferenca = fim - var)
 
 # na_if -------------------------------------------------------------------
 
@@ -192,7 +194,7 @@ mtcars %>%
   pull(mpg) %>%
   mean()
 
-mtcars %>% select(mpg, cyl)
+mtcars %>% dplyr::select(mpg, cyl)
 
 mean(mtcars$mpg)
 
@@ -217,7 +219,7 @@ glimpse(ames)
 install.packages("AmesHousing")
 AmesHousing::ames_raw
 
-# remotes::install_github("curso-r/basesCursoR")
+remotes::install_github("curso-r/basesCursoR")
 help(ames, package = "basesCursoR")
 
 base %>%
@@ -252,30 +254,44 @@ ames %>%
   )
 
 # Agora, usamos a função across
-ames %>%
-  group_by(geral_qualidade) %>%
-  summarise(
-    across(
-      .cols = c("lote_area", "venda_valor"),
-      .fns = mean,
-      na.rm = TRUE
-    )
-  )
 
 ames %>%
   group_by(geral_qualidade) %>%
-  summarise(
-    across(
-      .cols = c("lote_area"),
-      .fns = sum,
-      na.rm = TRUE
-    ),
-    across(
-      .cols = c("venda_valor"),
-      .fns = mean,
-      na.rm = TRUE
-    )
-  )
+  summarise(across(
+    .cols = c("lote_area", "venda_valor"),
+    .fns = mean, na.rm = TRUE
+  ))
+
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise(across(
+    .cols = c("lote_area"),
+    .fns = sum, na.rm = TRUE
+  ),
+  across(
+    .cols = c("venda_valor"),
+    .fns = mean, na.rm = TRUE
+  ))
+
+## A purrr-style formula for across() - more intuitive
+
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise(across(
+    .cols = c("lote_area", "venda_valor"),
+    .fns = ~mean(.x, na.rm = TRUE)
+  ))
+
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise(across(
+    .cols = c("lote_area"),
+    .fns = ~sum(.x, na.rm = TRUE)
+  ),
+  across(
+    .cols = c("venda_valor"),
+    .fns = ~mean(.x, na.rm = TRUE)
+  ))
 
 # Podemos aplicar facilmente uma função a todas
 # as colunas de uma base
@@ -480,7 +496,6 @@ tab_notas %>%
 tab_notas %>%
   rowwise() %>%
   mutate(media = mean(c_across(starts_with("prova"))))
-
 
 # A função rowwise() vai ser útil quando estivermos
 # trabalhando com list-columns!
