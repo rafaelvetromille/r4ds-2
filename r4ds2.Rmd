@@ -12,17 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## O pacote dplyr
 
-```{r, echo=F}
-
-shhh <- suppressPackageStartupMessages
-
-```
-
-
 ```{r}
 # Carrengando o pacote 
 
-shhh(library(tidyverse))
+library(dplyr)
 
 ```
 
@@ -95,14 +88,10 @@ A função `dplyr::case_when()` é uma generalização da função `base::ifelse
 
 ```{r}
 
-x <- sample(-10:10, size = 10) %>% 
-  as_tibble()
+x <- sample(-10:10, size = 10) %>%  as_tibble()
 
 x %>%
-  dplyr::mutate(sinal = case_when(x < 0 ~ "negativo", 
-                                  x == 0 ~ "zero",
-                                  x > 0 ~ "positivo"))
-
+  dplyr::mutate(sinal = case_when(x < 0 ~ "negativo", x == 0 ~ "zero", x > 0 ~ "positivo"))
 ```
 
 Se fossemos utilizar a função `base::ifelse()`, precisaríamos usar a função duas vezes, assim como é feito no Excel um `se` dentro de outro:
@@ -417,7 +406,78 @@ ames %>%
   select(1:5)
 ```
 
-Todas as colunas da base resultante eram colunas com classe `character` na base `ames`.
+Todas as colunas da base resultante eram colunas com classe `character` na base `ames`. Antes, utilizávamos a função `summarise_if()`, no entanto, com o ajudante `where()` não há mais necessidade. 
+
+```{r}
+# A função (antiga) summarise_if()
+ames %>%
+  summarise_if(.predicate = is.character,
+               .funs = n_distinct, na.rm = TRUE) %>%
+  select(1:5)
+
+# A purrr-style formula for across() - more intuitive
+
+ames %>%
+  summarise_if(.predicate = is.character,
+               .funs = ~ n_distinct(.x, na.rm = TRUE)) %>%
+  select(1:5)
+
+```
+
+Você também pode combinar as ações do `summarise_if()` e `summarise_at()` em um único across(). Calculamos as áreas médias, garantindo que pegamos apenas variáveis numéricas.
+
+```{r}
+ames %>%
+  summarise(across(
+    .cols = where(is.numeric) & contains("area"),
+    .fns =  mean, na.rm = TRUE
+  )) %>%
+  select(1:5)
+```
+
+Além disso, com a função `across()`, podemos fazer sumarizações bastante complexas. Por exemplo, 
+
+```{r}
+# summarise function with complex summarizations. 
+
+ames %>%
+  group_by(fundacao_tipo) %>%
+  summarise(
+    across(contains("area"), mean, na.rm = TRUE),
+    across(where(is.character), ~sum(is.na(.x))),
+    n_obs = n(),
+  ) %>% 
+  select(1:4, n_obs)
+
+# A purrr-style formula for across() - more intuitive
+
+ames %>%
+  group_by(fundacao_tipo) %>%
+  summarise(
+    across(
+      .cols = contains("area"),
+      .fns = ~ mean(.x, na.rm = TRUE)
+    ),
+    across(.cols = where(is.character),
+           .fns = ~ sum(is.na(.x))),
+    n_obs = n(),
+  ) %>%
+  select(1:4, n_obs)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```{r}
