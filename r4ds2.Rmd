@@ -44,7 +44,7 @@ bind_rows(imdb_2015, imdb_2016) %>% head()
 
 \newpage
 
-Podemos também usar a função bind_rows() para juntar várias tabelas. Aqui, todas as tabelas continuam tendo as mesmas colunas.
+Podemos também usar a função `bind_rows()` para juntar várias tabelas. Aqui, todas as tabelas continuam tendo as mesmas colunas. A função `list.files` produz um vetor de caracteres dos nomes dos arquivos ou diretórios no diretório nomeado.
 
 ```{r}
 
@@ -56,12 +56,372 @@ teste <- arquivos %>%
 
 ```
 
-ou 
+ou, simplesmente,  
 
 ```{r}
 
 teste <- arquivos %>%
   purrr::map_dfr(readr::read_rds) 
 
+
 ```
 
+onde o `r` da função `purrr::map_dfr()` indica _rows_. Além disso, a função `bind_rows()` também funciona para empilhar bases com colunas diferentes. 
+
+```{r}
+
+tab1 <- tibble::tibble(
+  var1 = c(1, 2, 3),
+  var2 = c("a", "b", "c"),
+  var3 = c(10, 20, 30)
+)
+
+tab2 <- tibble::tibble(
+  var2 = c("d", "e", "f"),
+  var1 = c(4, 5, 6)
+)
+
+bind_rows(tab1, tab2) 
+
+```
+
+Além da função `dplyr::bind_rows()` o `{dplyr}` também possui a função `dplyr::bind_cols()` que junta duas bases colando suas colunas lado a lado.
+
+\newpage
+
+# A função `case_when()`
+
+A função `dplyr::case_when()` é uma generalização da função `base::ifelse()`. Ela permite trabalharmos com quantas condições forem necessárias. 
+
+```{r}
+
+x <- sample(-10:10, size = 10) %>% 
+  as_tibble()
+
+x %>%
+  dplyr::mutate(sinal = case_when(x < 0 ~ "negativo", 
+                                  x == 0 ~ "zero",
+                                  x > 0 ~ "positivo"))
+
+```
+
+Se fossemos utilizar a função `base::ifelse()`, precisaríamos usar a função duas vezes, assim como é feito no Excel um `se` dentro de outro:
+
+```{r}
+
+x %>%
+  dplyr::mutate(sinal = ifelse(x < 0, "negativo", 
+                               ifelse(x == 0, "zero", "positivo")))
+
+```
+
+A ordem das condições é importante na função `dplyr::case_when()`, pois os testes são realizados na ordem em que aparecem e o próximo teste não substitui o anterior. Por exemplo, 
+
+```{r}
+
+mtcars %>%
+  mutate(
+    mpg_cat = case_when(
+      mpg <= 15 ~ "economico",
+      mpg < 22 ~ "regular",
+      mpg >= 22 ~ "bebe bem"
+    )
+  ) %>% 
+  head(15)
+
+```
+
+Nesse caso, os carros com `mpg` menor ou igual a 15 são considerados *econômicos*, os caros com `mpg` maior (estrito) que 15 e menor (estrito) que 22 são *regulares* e, por fim, os carros com `mpg` maior ou igual à 22 são considerados como *bebe bem*. Como a última condição é complementar, isto é, as observações que não entrarm nas condições anteriores com certeza entrarão na última condição, podemos substituí-la por um simples `TRUE`.
+
+```{r}
+
+mtcars %>%
+  mutate(
+    mpg_cat = case_when(
+      mpg < 15 ~ "economico",
+      mpg < 22 ~ "regular",
+      TRUE ~ "bebe bem"
+    )
+  ) %>% 
+  head(15)
+
+```
+
+\newpage
+
+Como pudemos ver, a função `dplyr::case_when()` é extretamente útil associada à função `dplyr::mutate()` pois assim, conseguimos criar variáveis novas que são obtidas através de testes de outras variáveis. Um caso bastante usado é quando queremos fazer gráficos em que os valores negativos ficam em vermelho enquanto que os valores positivos ficam em verde. 
+
+```{r}
+
+mtcars %>%
+  mutate(
+    mpg_cat = case_when(
+      mpg < 15 ~ "economico",
+      mpg < 22 ~ "regular",
+      TRUE ~ "bebe bem"
+    )
+  ) %>% 
+  head(14)
+```
+
+# As funções `first()` and `last()`
+
+Como o próprio nome já indica, essas funções retornam o primeiro e último valor de vetor/coluna. Por exemplo, 
+
+```{r}
+x <- c(1, 12, 30, 41, 15)
+
+first(x)
+
+last(x)
+
+```
+
+São funções úteis quando temos algum tipo de ordem, por exemplo:
+
+```{r}
+
+tab <- tibble::tibble(
+  tempo = c(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4),
+  var = c(1, 4, 10, 33, 1, 3, 0, 21, 12, 7, 9, 17),
+  grupo = c(rep("a", 4), rep("b", 4), rep("c", 4))
+)
+
+tab %>%
+  group_by(grupo) %>% 
+  arrange(tempo, .by_group = TRUE) %>% 
+  mutate(inicio = first(var), 
+         fim = last(var))
+
+```
+
+# A função `na_if()`
+
+Existem tabelas ou planilhas em que o valor `NA` não está escrito por padrão como `NA`. Dessa forma, a função `na_if()` transforma um padrão em `NA`. Por exemplo, 
+
+```{r}
+
+tab <- tibble::tibble(
+  var = c(1, 10, 2, -99, 10, -99)
+)
+
+tab %>% mutate(var = na_if(var, -99))
+
+
+```
+
+
+\newpage 
+
+# A função `coalesce()`
+
+A função `coalesce()` substitui os `NA`s de uma coluna pelos valores equivalentes de uma segunda coluna. No exemplo abaixo, substituimos os `NA`s da coluna `var1` pelos valores equivalentes da coluna `var2` (criamos uma nova coluna `var3` com o resultado para visualizarmos melhor). Repare que, no caso em que as duas colunas apresentavam `NA`, a coluna `var3` permaneceu com o `NA`.
+
+```{r}
+tab <- tibble::tibble(
+  var1 = c(1, 2, NA, 10, NA, NA),
+  var2 = c(NA, 2, 2, 3, 0, NA)
+)
+
+tab %>% 
+  mutate(var3 = coalesce(var1, var2))
+
+```
+
+Você também pode usar para substituir os valores `NA` de uma variável por um valor espcífico, por exemplo: 
+
+```{r}
+tab %>% 
+  mutate(var3 = coalesce(var1, 33))
+```
+
+Além disso, existe a função `dplyr::replace_na()` que faz a mesma coisa, por exemplo:
+
+```{r}
+tab %>% 
+  tidyr::replace_na(replace = list(var1 = 33, var2 = 66))
+```
+
+
+# As funções `lag()` e `lead()`
+
+Essas funções devolvem o valor defasado e valor futuro.
+
+```{r}
+
+tab <- tibble::tibble(
+  tempo = c(1, 2, 3, 4, 5),
+  var = c(1, 4, 10, 33, 20)
+)
+
+tab %>% 
+  dplyr::mutate(
+    var_lag1 = lag(var, n = 1L),
+    var_lead1 = lead(var, n = 1L)
+  )
+
+```
+
+# A função `pull()`
+
+Devolve uma coluna da base como vetor.
+
+```{r}
+mtcars %>% pull(mpg)
+```
+
+# A função `slice_sample()`
+
+Essa função pode ser utilizada para pegarmos uma amostra de linhas da nossa base de forma aleatória. No exemplo abaixo, pegamos uma amostra aleatória de tamanho 10 da base `mtcars`.
+
+```{r}
+
+slice_sample(mtcars, n = 10L)
+
+```
+
+Agora, pegamos 50\% da base `mtcars` de forma aleatória.
+
+```{r}
+slice_sample(mtcars, prop = 0.5)
+```
+
+Além dessa função, existem as funções: 
+
+- `slice_head()` and `slice_tail()` select the first or last rows.
+
+- `slice_min()` and `slice_max()` select rows with highest or lowest values of a variable.
+
+- `slice()` lets you index rows by their (integer) locations.
+
+\newpage
+
+# O novo dplyr
+
+A versão `1.0.0` do pacote `{dplyr}` foi oficialmente lançada em junho de 2020 e contou com diversas novidades Vamos falar das principais mudanças:
+
+- A nova função `across()`, que facilita aplicar uma mesma operação em várias colunas.
+
+- A repaginada da função `rowwise()` que objetiva fazer operações por linha.
+
+- As novas funcionalidades das funções `select()` e `rename()`. 
+
+- A nova função `relocate()` que facilita a mudança de posição de colunas.
+
+## Motivação
+
+Base de dados de venda de casas na cidade de Ames, nos Estados Unidos.
+
+- 2930 linhas e 77 colunas.
+
+- Cada linha corresponde a uma casa vendida e cada coluna a uma característica da casa ou da venda.
+
+```{r}
+# Base de dados
+
+ames <- readr::read_rds("./data/ames.rds")
+
+# Pegando apenas 5 colunas por uma questão de espaço.
+
+ames %>% 
+  select(1:5) %>% 
+  head()
+```
+
+\newpage
+
+## A função `across()`
+
+A função `across()` substitui a família de verbos `verbo_all()`, `verbo_if` e `verbo_at()`. A ideia é facilitar a aplicação de uma operação a diversas colunas da base. Para sumarizar a base para mais de uma variável, antigamente fazíamos
+
+```{r}
+# Como era antigamente ...
+
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise(
+    lote_area_media = mean(lote_area, na.rm = TRUE),
+    venda_valor_medio = mean(venda_valor, na.rm = TRUE)
+  )
+
+```
+
+Ou, ainda, 
+
+```{r}
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise_at(
+    .vars = vars(lote_area, venda_valor),
+    .funs = ~ mean(.x, na.rm = TRUE)
+  )
+```
+
+\newpage 
+
+Agora, com a nova função `across()`, podemos fazer a mesma sumarização da seguinte forma: 
+
+```{r}
+
+ames %>%
+  group_by(geral_qualidade) %>%
+  summarise(across(
+    .cols = c(lote_area, venda_valor),
+    .fns = mean, na.rm = TRUE
+  ))
+
+```
+
+A sintaxe é parecida com a função `summarise_at()`, mas agora não precisamos mais usar a função `vars()` e nem usar `list(nome_da_funcao)` ou `~nome_da_funcao(.x)` para definir a função aplicada nas colunas.
+
+Usando `across()`, podemos facilmente aplicar uma função em todas as colunas da nossa base. Abaixo, calculamos o número de valores distintos para todas as variáveis da base ames.
+
+```{r}
+# A função across()
+
+ames %>%
+  summarise(across(
+    .cols = everything(),
+    .fns = n_distinct, na.rm = TRUE
+  )) %>%
+  select(1:5)
+
+# A purrr-style formula for across() - more intuitive
+
+ames %>%
+  summarise(across(
+    .cols = everything(),
+    .fns = ~ n_distinct(.x, na.rm = TRUE)
+  )) %>%
+  select(1:5)
+
+
+```
+
+Se quisermos selecionar as colunas a serem modificadas a partir de um teste lógico, utilizamos o ajudante `where()`.
+
+No exemplo abaixo, calculamos o número de valores distintos das colunas de texto.
+
+```{r}
+# As função across(), com o auxiliar where() e summarise()
+
+ames %>%
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = mean, na.rm = T
+  )) %>%
+  select(1:5)
+
+
+# A purrr-style formula for across() - more intuitive
+
+ames %>%
+  summarise(across(
+    .cols = where(is.numeric),
+    .fns = ~ mean(.x, na.rm = T)
+  )) %>%
+  select(1:5)
+
+```
+
+Repare que ao utilizar a função ajudante `where`, a função a ser utilizada não entra com nenhum 
