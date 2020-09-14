@@ -22,11 +22,11 @@ library(dplyr)
 Vamos usar a função `bind_rows()` para juntarmos duas bases com as mesmas colunas. Neste caso, a função `bind_rows()` é equivalente à função `rbind()`.
 
 ```{r}
-# Juntando duas bases
+# Juntando duas bases.
 imdb_2015 <- readr::read_rds("./data/imdb_por_ano/imdb_2015.rds")
 imdb_2016 <- readr::read_rds("./data/imdb_por_ano/imdb_2016.rds")
 
-# A função bind_rows()
+# A função bind_rows().
 bind_rows(imdb_2015, imdb_2016) %>% head()
 
 ```
@@ -35,26 +35,25 @@ bind_rows(imdb_2015, imdb_2016) %>% head()
 
 \newpage
 
-Podemos também usar a função `bind_rows()` para juntar várias tabelas. Aqui, todas as tabelas continuam tendo as mesmas colunas. A função `list.files` produz um vetor de caracteres dos nomes dos arquivos ou diretórios no diretório nomeado.
+Podemos também usar a função `bind_rows()` para juntar várias tabelas. Aqui, todas as tabelas continuam tendo as mesmas colunas. 
+A função `list.files` produz um vetor de caracteres dos nomes dos arquivos ou diretórios no diretório nomeado.
 
 ```{r}
-
+## Vetor de arquivos na pasta especificada. 
 arquivos <- list.files("./data/imdb_por_ano/", full.names = TRUE)
 
-teste <- arquivos %>%
-  purrr::map(readr::read_rds) %>% 
-  bind_rows() 
-
+## Importar dados de uma única vez.
+df <- arquivos %>%
+  purrr::map(readr::read_rds) %>%
+  bind_rows()
 ```
 
 ou, simplesmente,  
 
 ```{r}
-
-teste <- arquivos %>%
-  purrr::map_dfr(readr::read_rds) 
-
-
+## Importando com a função purrr:map_dfr().
+df <- arquivos %>%
+  purrr::map_dfr(readr::read_rds)
 ```
 
 onde o `r` da função `purrr::map_dfr()` indica _rows_. Além disso, a função `bind_rows()` também funciona para empilhar bases com colunas diferentes. 
