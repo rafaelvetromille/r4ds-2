@@ -120,7 +120,9 @@ mtcars %>%
   head(15)
 ```
 
-Nesse caso, os carros com `mpg` menor ou igual a 15 são considerados *econômicos*, os caros com `mpg` maior (estrito) que 15 e menor (estrito) que 22 são *regulares* e, por fim, os carros com `mpg` maior ou igual à 22 são considerados como *bebe bem*. Como a última condição é complementar, isto é, as observações que não entrarm nas condições anteriores com certeza entrarão na última condição, podemos substituí-la por um simples `TRUE`.
+Nesse caso, os carros com `mpg` menor ou igual a 15 são considerados *econômicos*, os caros com `mpg` maior (estrito) que 15 e menor (estrito) que 22 são *regulares* 
+e, por fim, os carros com `mpg` maior ou igual à 22 são considerados como *bebe bem*. Como a última condição é complementar, isto é, as observações que não entrarm nas condições 
+anteriores com certeza entrarão na última condição, podemos substituí-la por um simples `TRUE`.
 
 ```{r}
 ## Um facilitador nem tão facilitante (TRUE)
