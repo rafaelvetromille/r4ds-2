@@ -23,10 +23,10 @@ Vamos usar a função `bind_rows()` para juntarmos duas bases com as mesmas colu
 
 ```{r}
 # Juntando duas bases
-
 imdb_2015 <- readr::read_rds("./data/imdb_por_ano/imdb_2015.rds")
 imdb_2016 <- readr::read_rds("./data/imdb_por_ano/imdb_2016.rds")
 
+# A função bind_rows()
 bind_rows(imdb_2015, imdb_2016) %>% head()
 
 ```
