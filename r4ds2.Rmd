@@ -200,7 +200,6 @@ tab %>% mutate(var = na_if(var, -99))
 
 ```
 
-
 \newpage 
 
 # A função `coalesce()`
