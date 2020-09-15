@@ -1,15 +1,20 @@
-# 1. dplyr ++ -------------------------------------------------------------
+##################################################################
+##                           DPLYR ++                           ##
+##################################################################
 
 library(dplyr)
 
-# bind_rows ---------------------------------------------------------------
+
+##----------------------------------------------------------------
+##                      A função bind_rows()                     -
+##----------------------------------------------------------------
 
 # Juntando duas bases
 
 imdb_2015 <- readr::read_rds("data/imdb_por_ano/imdb_2015.rds")
 imdb_2016 <- readr::read_rds("data/imdb_por_ano/imdb_2016.rds")
 
-# tidyverse
+# dplyr
 dplyr::bind_rows(imdb_2015, imdb_2016)
 
 # r base
@@ -245,12 +250,12 @@ ames %>%
   )
 
 # ou
+
 ames %>%
   group_by(geral_qualidade) %>%
   summarise_at(
     .vars = vars(lote_area, venda_valor),
-    .funs = mean,
-    na.rm = TRUE
+    .funs = mean, na.rm = TRUE
   )
 
 # Agora, usamos a função across
@@ -273,6 +278,12 @@ ames %>%
     .fns = mean, na.rm = TRUE
   ))
 
+ames %>%
+  summarise(across(
+    .cols = contains("area"),
+    .fns = n_distinct, na.rm = TRUE
+  ))
+
 ## A purrr-style formula for across() - more intuitive
 
 ames %>%
@@ -293,40 +304,82 @@ ames %>%
     .fns = ~mean(.x, na.rm = TRUE)
   ))
 
+ames %>%
+  summarise(across(
+    .cols = contains("area"),
+    .fns = ~ n_distinct(.x, na.rm = TRUE)
+  ))
+
 # Podemos aplicar facilmente uma função a todas
-# as colunas de uma base
-ames %>% summarise(across(
-  .cols = contains("area"),
-  .fns = n_distinct
-  )) %>%
-  View
+# as colunas de uma base o default do argumento .cols da
+# função across() é .cols = everything()
+
+ames %>%
+  summarise(across(
+    .cols = everything(),
+    .fns = ~ n_distinct(.x, na.rm = TRUE)
+  ))
+
+# ou apenas
+
+ames %>%
+  summarise(across(.fns = ~ n_distinct(.x, na.rm = TRUE)))
 
 # Antes usávamos o sufixo "_all"
+
 ames %>%
-  summarise_all(.funs = ~n_distinct(.x))
+  summarise_all(.funs = ~ n_distinct(.x))
 
 # where -------------------------------------------------------------------
 
-# o where é uma nova opção do framework "tidyselect"
-# para seleção de colunas
+# A função 'where' é uma nova opção do framework "tidyselect"
+# para seleção de colunas.
 
 # Com ele, podemos aplicar uma função a todas as
-# colunas de um tipo
-ames %>%
-  summarise(across(
-    where(is.character),
-    n_distinct
-  )) %>% View
+# colunas de um 'tipo' substituindo o verbo summarise_if
+
+# Exemplo 1.
+
+# Exemplo across() direto
 
 ames %>%
-  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+  summarise(across(where(is.character),
+                   n_distinct, na.rm = TRUE))
 
-# Antes fazíamos
+# A purrr-style formula - more intuitive
+
+ames %>%
+  summarise(across(.cols = where(is.character),
+                   .fns = ~ n_distinct(.x, na.rm = TRUE)))
+
+
+# No entanto, antes fazíamos
+
 ames %>%
   summarise_if(is.character, n_distinct)
 
+# Exemplo 2.
+
+# Exemplo across() direto
+
+ames %>%
+  summarise(across(.cols = where(is.numeric),
+                   .fns =  mean, na.rm = TRUE))
+
+ames %>%
+  summarise(across(.cols = where(is.numeric),
+                   .fns =  mean, na.rm = TRUE))
+
+# A purrr-style formula - more intuitive
+
 ames %>%
   summarise_if(is.numeric, mean, na.rm = TRUE)
+
+# No entanto, antes fazíamos
+
+ames %>%
+  summarise_if(is.numeric, mean, na.rm = TRUE)
+
 
 # Também podemos combinar as ações do
 # `summarise_if()` e `summarise_at()`
